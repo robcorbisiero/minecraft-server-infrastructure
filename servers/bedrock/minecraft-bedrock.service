@@ -1,0 +1,19 @@
+[Unit]
+Description=Minecraft Bedrock Dedicated Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=rob
+Group=rob
+WorkingDirectory=/opt/minecraft/bedrock
+Environment="LD_LIBRARY_PATH=/opt/minecraft/bedrock"
+
+ExecStart=/usr/bin/tmux new-session -d -s minecraft "/opt/minecraft/bedrock/bedrock_server"
+ExecStop=/usr/bin/tmux send-keys -t minecraft "stop" C-m
+
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

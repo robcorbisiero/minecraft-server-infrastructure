@@ -6,7 +6,9 @@ All three servers were working after the Paper migration. This page is my checkl
 
 For Bedrock, I created a recovery archive, checked that tar could read it, and restarted the service successfully. The commands and output are in the [Bedrock notes](bedrock-migration.md#5-validate-a-recovery-archive).
 
-On November 4, I checked the backup directory again: it contained one 375 MB archive from October 1. The filtered systemd timer list showed only Ubuntu's package-database backup. I haven't found a Minecraft timer yet; cron and other scheduling still need checking. [Screenshots](../servers/bedrock/README.md#service-check--november-4-2026).
+On November 4, I checked the backup directory again: it contained one 375 MB archive from October 1. The filtered systemd timer list showed only Ubuntu's package-database backup. I haven't found a Minecraft timer; the follow-up cron results are below. [Screenshots](../servers/bedrock/README.md#service-check--november-4-2026).
+
+The follow-up cron checks found no crontab for `rob` or `root` and no Minecraft entries in `/etc/crontab` or `/etc/cron.d`. Automatic Bedrock backups are still a task to set up or locate elsewhere; the October archive is the only file shown in the checked backup directory.
 
 For ATM10, I worked on `atm10-backup.service` and checked its errors and directory permissions. I still need to document the final schedule and a successful recurring run. Automatic Paper backups were also on the follow-up list.
 
@@ -21,7 +23,8 @@ Before updating a server or modpack, I want a backup and a record of the version
 - [ ] Confirm backup schedules and retention for all three servers.
 - [ ] Check off-host backup copies.
 - [ ] Complete and document a restore test.
-- [ ] Add the installed systemd units with secrets removed.
+- [x] Add the installed Bedrock systemd unit.
+- [ ] Add the installed ATM10 and Paper systemd units with secrets removed.
 - [ ] Check clean shutdown behavior.
 - [ ] Add CPU, RAM, disk, and Minecraft performance monitoring.
 - [ ] Confirm cleanup of Paper's migration staging folder.

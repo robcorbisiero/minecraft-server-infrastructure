@@ -30,4 +30,16 @@ I checked `mc-bedrock`: the service was active, enabled at startup, and listenin
 
 ![Backup directory and timer check](../../screenshots/bedrock-backup-check.png)
 
-The backup directory contained one 375 MB recovery archive dated October 1. The filtered timer list only showed `dpkg-db-backup.timer`, which backs up the package database. This check didn't find a Minecraft systemd timer; I still need to check cron and any other scheduling before calling the backups automatic.
+The backup directory contained one 375 MB recovery archive dated October 1. The filtered timer list only showed `dpkg-db-backup.timer`, which backs up the package database. This check didn't find a Minecraft systemd timer. I checked cron next, as shown below.
+
+### Cron and the service file
+
+![Cron checks on the Bedrock host](../../screenshots/bedrock-cron-check.png)
+
+I checked cron next: neither `rob` nor `root` had a crontab, and the search in `/etc/crontab` and `/etc/cron.d` returned no Minecraft entries. Between this and the timer check, I haven't found an automatic Bedrock backup job in those locations.
+
+![Installed Bedrock systemd unit](../../screenshots/bedrock-systemd-unit.png)
+
+The installed [minecraft-bedrock.service](minecraft-bedrock.service) runs as `rob`, starts a detached tmux session named `minecraft`, and sets `LD_LIBRARY_PATH` to the Bedrock directory. Its stop action sends `stop` followed by Enter to that session.
+
+This is a copy of my current unit, including `Type=forking` and `RemainAfterExit=yes`. I still need to test that it waits for Bedrock to finish saving during shutdown and accurately reflects an unexpected server exit. The file alone doesn't establish either behavior.

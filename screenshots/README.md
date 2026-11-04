@@ -10,7 +10,15 @@ November 4, 2026: `mc-bedrock` was running, enabled at boot, and listening on UD
 
 ![Bedrock backup directory and filtered timer list](bedrock-backup-check.png)
 
-The directory showed one 375 MB recovery archive from October 1. The timer listed is `dpkg-db-backup.timer`, not a Minecraft backup. No Minecraft timer appeared in this filtered list. Cron and other backup locations still need checking.
+The directory showed one 375 MB recovery archive from October 1. The timer listed is `dpkg-db-backup.timer`, not a Minecraft backup. No Minecraft timer appeared in this filtered list. The follow-up cron check is below; other backup locations have not been inspected.
+
+![Bedrock cron checks](bedrock-cron-check.png)
+
+The follow-up shows no crontab for `rob` or `root`, and no matching Minecraft entries in `/etc/crontab` or `/etc/cron.d`.
+
+![Bedrock systemd service file](bedrock-systemd-unit.png)
+
+`systemctl cat minecraft-bedrock` shows the installed tmux-based unit. A text copy and notes are in the [Bedrock page](../servers/bedrock/README.md#cron-and-the-service-file).
 
 ## Paper: installed Java runtime
 
