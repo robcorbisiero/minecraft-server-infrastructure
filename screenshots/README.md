@@ -2,6 +2,16 @@
 
 A few captures from setting up and troubleshooting the servers.
 
+## Bedrock: service and backup checks
+
+![Bedrock running and enabled with UDP 19132 listening](bedrock-service-status.png)
+
+November 4, 2026: `mc-bedrock` was running, enabled at boot, and listening on UDP 19132. This is a local service check; I haven't used it as proof of an external player connection.
+
+![Bedrock backup directory and filtered timer list](bedrock-backup-check.png)
+
+The directory showed one 375 MB recovery archive from October 1. The timer listed is `dpkg-db-backup.timer`, not a Minecraft backup. No Minecraft timer appeared in this filtered list. Cron and other backup locations still need checking.
+
 ## Paper: installed Java runtime
 
 ![Java version on mc-paper](paper-java-version.jpg)

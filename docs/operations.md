@@ -6,6 +6,8 @@ All three servers were working after the Paper migration. This page is my checkl
 
 For Bedrock, I created a recovery archive, checked that tar could read it, and restarted the service successfully. The commands and output are in the [Bedrock notes](bedrock-migration.md#5-validate-a-recovery-archive).
 
+On November 4, I checked the backup directory again: it contained one 375 MB archive from October 1. The filtered systemd timer list showed only Ubuntu's package-database backup. I haven't found a Minecraft timer yet; cron and other scheduling still need checking. [Screenshots](../servers/bedrock/README.md#service-check--november-4-2026).
+
 For ATM10, I worked on `atm10-backup.service` and checked its errors and directory permissions. I still need to document the final schedule and a successful recurring run. Automatic Paper backups were also on the follow-up list.
 
 The next steps are to confirm retention, keep copies away from the server's own disk, and restore a backup into a separate test location. Reading an archive is useful, but I want to know I can actually recover a playable world.

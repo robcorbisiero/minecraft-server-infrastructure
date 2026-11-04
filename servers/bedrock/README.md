@@ -21,3 +21,13 @@ I checked a recovery archive with tar, restarted Bedrock, and confirmed the UDP 
 See [architecture](../../docs/architecture.md) and [operations](../../docs/operations.md).
 
 Read the [full migration command walkthrough](../../docs/bedrock-migration.md).
+
+## Service check — November 4, 2026
+
+![Bedrock service status and UDP listener](../../screenshots/bedrock-service-status.png)
+
+I checked `mc-bedrock`: the service was active, enabled at startup, and listening on UDP 19132. The status showed about 525.7 MB of memory use and a tmux session named `minecraft` launching `/opt/minecraft/bedrock/bedrock_server`.
+
+![Backup directory and timer check](../../screenshots/bedrock-backup-check.png)
+
+The backup directory contained one 375 MB recovery archive dated October 1. The filtered timer list only showed `dpkg-db-backup.timer`, which backs up the package database. This check didn't find a Minecraft systemd timer; I still need to check cron and any other scheduling before calling the backups automatic.
