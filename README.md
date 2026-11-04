@@ -6,9 +6,9 @@ Three dedicated physical Linux machines hosting Minecraft Bedrock Dedicated Serv
 
 | Workload | Hardware recorded during setup | Platform | Recorded outcome |
 | --- | --- | --- | --- |
-| [Bedrock](servers/bedrock/README.md) | Lenovo mini PC | Linux | Working alongside the other two servers |
-| [ATM10](servers/atm10/README.md) | Mini PC with Intel Core i5-8500T | Linux | Working alongside the other two servers |
-| [Paper](servers/paper/README.md) | HP ProDesk 600 G2 SFF | Ubuntu | Windows migration completed; owner confirmed gameplay working |
+| [Bedrock](servers/bedrock/README.md) | Lenovo ThinkCentre M710q; i5-7500T; 16 GB DDR4; 120 GB NVMe | Ubuntu Server 24.04.4 LTS | Migrated from M720q |
+| [ATM10](servers/atm10/README.md) | Lenovo ThinkCentre M720q; i5-8500T; 16 GB DDR4; 128 GB WD SN520 NVMe | Ubuntu Server 26.04.1 LTS | Repurposed from Bedrock; single-player world migrated |
+| [Paper](servers/paper/README.md) | HP ProDesk 600 G2 SFF; i5-6500; 16 GB DDR4; 240 GB SSD | Ubuntu Server 26.04.1 LTS | Windows migration completed; owner confirmed gameplay working |
 
 These are separate physical servers, rather than workloads assumed to run inside the separate Proxmox homelab.
 
@@ -17,18 +17,19 @@ These are separate physical servers, rather than workloads assumed to run inside
 ```mermaid
 flowchart TD
     Players[Remote Minecraft players] --> Router[Home router]
-    Router --> Bedrock[Lenovo mini PC / Linux / Bedrock]
-    Router --> ATM10[i5-8500T mini PC / Linux / ATM10]
+    Router --> Bedrock[Lenovo M710q / i5-7500T / Bedrock]
+    Router --> ATM10[Lenovo M720q / i5-8500T / ATM10]
     Router --> Paper[HP ProDesk 600 G2 SFF / Ubuntu / Paper]
 ```
 
-The diagram shows the logical arrangement. Exact Bedrock and ATM10 forwarding rules were not available in the recovered setup notes.
+Bedrock originally ran on the M720q. It moved to the M710q so the newer six-core M720q could host ATM10. Recorded application ports are Bedrock UDP 19132, ATM10 TCP 25565, and Paper TCP 25555; current router rules have not been inspected.
 
 ## Documentation
 
 - [Architecture and network configuration](docs/architecture.md)
 - [Paper migration from Windows to Linux](docs/paper-migration.md)
 - [Operations and remaining work](docs/operations.md)
+- [Hardware inventory and migration chronology](docs/hardware-inventory.md)
 - Individual server notes: [Bedrock](servers/bedrock/README.md), [ATM10](servers/atm10/README.md), [Paper](servers/paper/README.md)
 
 ## Skills demonstrated
@@ -41,8 +42,8 @@ The diagram shows the logical arrangement. Exact Bedrock and ATM10 forwarding ru
 
 ## Documentation status
 
-Prepared November 3, 2026 from the recovered setup conversation and the owner's confirmation of the three server types. Historical working status is not a live health check. Exact RAM, storage, OS releases, service units, and installed versions require a fresh inventory before they can be documented as current.
+Updated November 3, 2026 using earlier setup messages, hardware assessments, migration confirmations, and original Paper terminal output. Specifications and OS versions describe the recorded setup; historical working status is not a live health check.
 
-Automated backups, restore tests, monitoring, and maintenance scripts are follow-up work; this repository does not claim they have been implemented. It contains documentation only. World saves, player information, binaries, credentials, and live configuration files are excluded.
+Earlier messages include ATM10 backup-service troubleshooting and a verified Bedrock recovery archive. Final automated backup schedules and off-host copies remain unverified; see the operations notes. Monitoring and restore-test completion are not established. World saves, player information, binaries, credentials, and live configuration files are excluded.
 
 Related project: [Enterprise Infrastructure Homelab](https://github.com/robcorbisiero/enterprise-infrastructure-homelab).
