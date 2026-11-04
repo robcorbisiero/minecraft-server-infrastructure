@@ -1,0 +1,27 @@
+# Publish documentation and reviewed examples only.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.jar
+*.zip
+*.tar
+*.gz
+*.log
+logs/
+crash-reports/
+backups/
+world/
+worlds/
+world_nether/
+world_the_end/
+plugins/
+mods/
+server.properties
+ops.json
+whitelist.json
+allowlist.json
+permissions.json
+usercache.json
+banned-*.json
