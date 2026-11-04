@@ -19,6 +19,10 @@ A self-hosted environment running Bedrock Dedicated Server, All the Mods 10, and
 
 ## The environment
 
+<img src="photos/physical-server-setup.jpg" alt="Physical setup: white wireless router, Bedrock Lenovo M710q on the left, ATM10 Lenovo M720q in the middle, and Paper HP ProDesk desktop on the right" width="760">
+
+**Physical deployment, identified by the owner:** white box — wireless router; left mini PC — Bedrock; middle mini PC — ATM10; HP desktop on the right — Paper. [Photo and hardware mapping](photos/README.md).
+
 | Workload | Host | CPU | RAM | Storage | Recorded OS |
 | --- | --- | --- | --- | --- | --- |
 | [Bedrock](servers/bedrock/README.md) | Lenovo ThinkCentre M710q | i5-7500T, 4C/4T | 16 GB DDR4 | 120 GB NVMe | Ubuntu Server 24.04.4 LTS |

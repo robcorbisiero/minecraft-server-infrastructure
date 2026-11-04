@@ -1,5 +1,7 @@
 # Hardware inventory and workload migration
 
+The [physical deployment photograph](../photos/README.md) confirms the owner's device mapping: white wireless router, Bedrock mini PC on the left, ATM10 mini PC in the middle, and Paper desktop on the right.
+
 | Workload after migration | Physical machine | CPU | RAM | Storage |
 | --- | --- | --- | --- | --- |
 | Bedrock | Lenovo ThinkCentre M710q | i5-7500T, 4 cores / 4 threads | 16 GB DDR4 | 120 GB NVMe |
