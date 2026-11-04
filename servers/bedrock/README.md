@@ -19,3 +19,5 @@ The migration notes identify BOMD, Dynamic Lighting, and Better Backpacks direct
 Original terminal output records a recovery archive passing a tar listing check, followed by a successful service restart and UDP 19132 listener. This establishes archive readability, not a full restore test or a confirmed recurring backup schedule.
 
 See [architecture](../../docs/architecture.md) and [operations](../../docs/operations.md).
+
+Read the [full migration command walkthrough](../../docs/bedrock-migration.md).

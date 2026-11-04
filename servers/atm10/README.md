@@ -22,3 +22,5 @@ Earlier messages cover tmux console access, conversion to systemd management, RC
 The owner reported good performance except when three players generated new chunks. Historical idle heap diagnostics showed approximately 3.55 GiB used against a 10 GiB maximum. Chunk pregeneration was recommended; completion was not established in the reviewed messages.
 
 See [architecture](../../docs/architecture.md) and [operations](../../docs/operations.md).
+
+Read the [deployment and JVM diagnostics walkthrough](../../docs/atm10-deployment.md), including the original heap screenshot.

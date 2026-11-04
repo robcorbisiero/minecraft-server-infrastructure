@@ -1,49 +1,73 @@
 # Minecraft Server Infrastructure
 
-Three dedicated physical Linux machines hosting Minecraft Bedrock Dedicated Server, All the Mods 10 (ATM10), and Paper. This project documents the environment and the migration of an existing Paper server from Windows to Ubuntu.
+**Three dedicated Ubuntu hosts. Two workload migrations. Real command output and troubleshooting evidence.**
 
-## Server inventory
+A self-hosted environment running Bedrock Dedicated Server, All the Mods 10, and Paper on repurposed business PCs. This project follows the work from hardware selection and world transfers to Linux service management, DNS, storage allocation, and JVM diagnostics.
 
-| Workload | Hardware recorded during setup | Platform | Recorded outcome |
-| --- | --- | --- | --- |
-| [Bedrock](servers/bedrock/README.md) | Lenovo ThinkCentre M710q; i5-7500T; 16 GB DDR4; 120 GB NVMe | Ubuntu Server 24.04.4 LTS | Migrated from M720q |
-| [ATM10](servers/atm10/README.md) | Lenovo ThinkCentre M720q; i5-8500T; 16 GB DDR4; 128 GB WD SN520 NVMe | Ubuntu Server 26.04.1 LTS | Repurposed from Bedrock; single-player world migrated |
-| [Paper](servers/paper/README.md) | HP ProDesk 600 G2 SFF; i5-6500; 16 GB DDR4; 240 GB SSD | Ubuntu Server 26.04.1 LTS | Windows migration completed; owner confirmed gameplay working |
+![Minecraft server architecture](diagrams/server-topology.svg)
 
-These are separate physical servers, rather than workloads assumed to run inside the separate Proxmox homelab.
+## Start here
 
-## Architecture
+| Walkthrough | What it demonstrates |
+| --- | --- |
+| [Bedrock migration](docs/bedrock-migration.md) | Preserve worlds and add-ons, validate the destination, expand LVM, check a recovery archive |
+| [ATM10 deployment and diagnostics](docs/atm10-deployment.md) | Migrate a single-player save, manage NeoForge, inspect JVM memory, investigate startup and backup issues |
+| [Paper: Windows to Ubuntu](docs/paper-migration.md) | Preserve a 23 GB server, prepare a Linux service identity, validate Java, logs, listener, and DNS |
+| [Troubleshooting case studies](docs/troubleshooting.md) | Separate symptoms, evidence, decisions, and unresolved questions |
+| [Screenshot evidence](screenshots/README.md) | Original Java, heap, and DNS captures with precise captions |
+| [Administration commands](docs/command-reference.md) | Hardware inventory, service checks, logs, sockets, DNS, and Java diagnostics |
 
-```mermaid
-flowchart TD
-    Players[Remote Minecraft players] --> Router[Home router]
-    Router --> Bedrock[Lenovo M710q / i5-7500T / Bedrock]
-    Router --> ATM10[Lenovo M720q / i5-8500T / ATM10]
-    Router --> Paper[HP ProDesk 600 G2 SFF / Ubuntu / Paper]
-```
+## The environment
 
-Bedrock originally ran on the M720q. It moved to the M710q so the newer six-core M720q could host ATM10. Recorded application ports are Bedrock UDP 19132, ATM10 TCP 25565, and Paper TCP 25555; current router rules have not been inspected.
+| Workload | Host | CPU | RAM | Storage | Recorded OS |
+| --- | --- | --- | --- | --- | --- |
+| [Bedrock](servers/bedrock/README.md) | Lenovo ThinkCentre M710q | i5-7500T, 4C/4T | 16 GB DDR4 | 120 GB NVMe | Ubuntu Server 24.04.4 LTS |
+| [ATM10](servers/atm10/README.md) | Lenovo ThinkCentre M720q | i5-8500T, 6C/6T | 16 GB DDR4 | 128 GB WD SN520 NVMe | Ubuntu Server 26.04.1 LTS |
+| [Paper](servers/paper/README.md) | HP ProDesk 600 G2 SFF | i5-6500 | 16 GB DDR4 | 240 GB SSD | Ubuntu Server 26.04.1 LTS |
 
-## Documentation
+These are physical hosts. Bedrock originally occupied the M720q, then moved to the M710q so the six-core machine could host the heavier ATM10 workload. Paper later moved from Windows to the HP. See [hardware evidence and chronology](docs/hardware-inventory.md).
 
-- [Architecture and network configuration](docs/architecture.md)
-- [Paper migration from Windows to Linux](docs/paper-migration.md)
+## Engineering highlights
+
+- **Workload placement:** moved the lighter Bedrock workload before repurposing the stronger machine for modded Java.
+- **Data preservation:** transferred existing worlds, add-ons, plugins, datapacks, inventories, and progression rather than rebuilding from scratch.
+- **Linux operations:** used systemd, journalctl, tmux, dedicated runtime directories, and service-state checks.
+- **Storage troubleshooting:** distinguished installed disk capacity from allocated LVM root space.
+- **Network diagnosis:** separated local listeners, firewall policy, NAT forwarding, A records, and a Minecraft SRV record for Paper's non-default TCP port.
+- **Performance analysis:** checked actual JVM heap use before increasing memory allocation in response to exploration lag.
+
+## Evidence, not just a parts list
+
+### Paper runtime installed and verified
+
+![Paper OpenJDK version output](screenshots/paper-java-version.jpg)
+
+The original host capture confirms OpenJDK 25.0.4.1. The [Paper walkthrough](docs/paper-migration.md) connects runtime preparation to the migration and subsequent gameplay validation.
+
+### ATM10 heap measured before tuning
+
+![ATM10 heap information](screenshots/atm10-heap-info.jpg)
+
+The original idle sample shows approximately **3.55 GiB used**, **8.38 GiB committed**, and **10 GiB reserved**. A large Java process alone did not establish heap exhaustion. The [diagnostic case study](docs/atm10-deployment.md#4-investigate-the-exploration-slowdown) explains the decision and its limits.
+
+The [gallery](screenshots/README.md) also includes the original Paper DNS SRV configuration screenshot.
+
+## Operational boundaries
+
+| Area | What the record establishes |
+| --- | --- |
+| Gameplay | Owner confirmed the three-server environment working after Paper migration |
+| Bedrock migration | Destination service reported active and enabled; subsequent UDP listener check recorded |
+| Bedrock recovery archive | Archive listing succeeded; this is not a full restore test |
+| ATM10 backups | Backup service and troubleshooting recorded; final recurring-job success remains unverified |
+| Paper backups | Automatic backups remained follow-up work in the reviewed messages |
+| Monitoring | No deployed dashboard or sustained uptime claim |
+
+This repository documents historical work recovered in November 2026. Commands are attributed to the setup workflow or labeled as reference sequences; they have not been rerun against the live hosts for this publication. Credentials, player data, world saves, raw logs, private addresses, and service secrets are excluded. The original DNS screenshot retains the public hostname.
+
+## Further documentation
+
+- [Network architecture](docs/architecture.md)
 - [Operations and remaining work](docs/operations.md)
-- [Hardware inventory and migration chronology](docs/hardware-inventory.md)
-- Individual server notes: [Bedrock](servers/bedrock/README.md), [ATM10](servers/atm10/README.md), [Paper](servers/paper/README.md)
-
-## Skills demonstrated
-
-- Hosting three distinct Minecraft server environments on dedicated Linux hardware.
-- Migrating an existing Windows Paper workload while retaining worlds and plugin data.
-- Configuring Java server access through a non-default TCP port and Minecraft DNS SRV record.
-- Validating a migration through application startup and player testing.
-- Identifying storage cleanup, backup, and monitoring follow-up work.
-
-## Documentation status
-
-Updated November 3, 2026 using earlier setup messages, hardware assessments, migration confirmations, and original Paper terminal output. Specifications and OS versions describe the recorded setup; historical working status is not a live health check.
-
-Earlier messages include ATM10 backup-service troubleshooting and a verified Bedrock recovery archive. Final automated backup schedules and off-host copies remain unverified; see the operations notes. Monitoring and restore-test completion are not established. World saves, player information, binaries, credentials, and live configuration files are excluded.
-
-Related project: [Enterprise Infrastructure Homelab](https://github.com/robcorbisiero/enterprise-infrastructure-homelab).
+- [Evidence and documentation conventions](docs/evidence-method.md)
+- Related project: [Enterprise Infrastructure Homelab](https://github.com/robcorbisiero/enterprise-infrastructure-homelab)
