@@ -1,6 +1,6 @@
-# Administration command reference
+# Commands I use
 
-Commands below were used or discussed in the setup history, with addresses and transient PIDs replaced by placeholders. They are documentation, not commands executed against the servers during this repository work. Review write operations and verify paths before reuse.
+A quick reference from setting up and troubleshooting the servers. Replace the example hostname and Java PID before using them.
 
 ## Hardware and storage
 
@@ -15,7 +15,7 @@ sudo lvs
 java -version
 ```
 
-These distinguish machine model, physical capacity, filesystem allocation, available memory, and runtime version. `df` describes the mounted filesystem, not the capacity of the whole device.
+I use these to check the machine, memory, Java version, and storage layout. `df` shows the filesystem size; `lsblk` helps explain where the rest of the disk went.
 
 ## Service state and logs
 
@@ -28,7 +28,7 @@ systemctl status minecraft-paper --no-pager -l
 sudo journalctl -u minecraft-paper -n 50 --no-pager
 ```
 
-The Paper service name comes from the migration plan; confirm the installed unit. `active` describes the process/service state, while `enabled` describes startup configuration. Neither alone proves a player can join.
+`active` tells me the service is running; `enabled` tells me it is configured to start at boot. The Paper name is from my migration plan, so check the installed unit if you adapt these.
 
 ## Listener and DNS checks
 
@@ -39,7 +39,7 @@ dig +short paper.example.com A
 dig +short SRV _minecraft._tcp.paper.example.com
 ```
 
-The DNS hostname is sanitized. The recorded Paper SRV values were priority 0, weight 0, port 25555, and a 30-minute TTL. A correct DNS response does not prove NAT forwarding or application health.
+I used priority 0, weight 0, port 25555, and a 30-minute TTL for Paper's SRV record. I check the local listener and router forwarding separately from DNS.
 
 ## Java investigation
 
@@ -51,7 +51,7 @@ jcmd JAVA_PID GC.heap_info
 top -H -p JAVA_PID
 ```
 
-Replace `JAVA_PID` with the current process. Process arguments and logs can contain secrets; review output before sharing. RSS includes more than heap memory, and a single `%CPU` sample is not proof of a CPU bottleneck.
+Replace `JAVA_PID` with the current Minecraft PID. I check heap usage separately from RSS because the Java process uses memory outside the heap too. Check output for secrets before sharing it.
 
 ## Backup troubleshooting
 
@@ -62,4 +62,4 @@ ls -ld /opt/minecraft/backups
 ls -ld /opt/minecraft/atm10/world
 ```
 
-See the [Bedrock migration case study](bedrock-migration.md) for the recorded recovery archive command and its limits. Avoid publishing complete logs or service files before checking them for credentials and player details.
+The archive command is in my [Bedrock migration notes](bedrock-migration.md). I keep raw logs and service files private until I've removed credentials and player details.

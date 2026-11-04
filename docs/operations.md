@@ -1,29 +1,27 @@
-# Operations and remaining work
+# Maintenance and things left to do
 
-## Recorded validation
+All three servers were working after the Paper migration. This page is my checklist for the maintenance side.
 
-The owner confirmed all three servers working after the Paper migration. This is historical evidence; no live server connection or health check was performed for this documentation.
+## Backups
 
-## Next maintenance work
+For Bedrock, I created a recovery archive, checked that tar could read it, and restarted the service successfully. The commands and output are in the [Bedrock notes](bedrock-migration.md#5-validate-a-recovery-archive).
 
-| Task | Recorded status | Evidence needed to mark complete |
-| --- | --- | --- |
-| Inventory hardware, OS, versions, ports, and runtime paths | Hardware mapping recovered; see inventory | Fresh host inspection to confirm current state |
-| Capture service management configuration | Not recovered | Actual sanitized unit files and service status |
-| Verify graceful shutdown | Follow-up | Logs showing a clean save and stop |
-| Automate backups to separate storage | ATM10 backup service appears in troubleshooting; Bedrock recovery archive verified | Final schedule, successful recurring runs, and off-host destination verification |
-| Test restoration | Not recorded | Isolated restore and gameplay validation |
-| Monitor CPU, RAM, disk, and application performance | Planned | Actual monitoring configuration and observed metrics |
-| Clean Paper migration staging files | Recommended; completion unknown | Disk inspection and confirmed independent backup |
+For ATM10, I worked on `atm10-backup.service` and checked its errors and directory permissions. I still need to document the final schedule and a successful recurring run. Automatic Paper backups were also on the follow-up list.
 
-## Recovered backup evidence
+The next steps are to confirm retention, keep copies away from the server's own disk, and restore a backup into a separate test location. Reading an archive is useful, but I want to know I can actually recover a playable world.
 
-Earlier Bedrock terminal output shows a recovery archive passing a tar listing check, followed by the service active and listening on UDP 19132. This verifies archive readability and service restart, not a complete restore test. Older ATM10 messages include `atm10-backup.service` status and error diagnostics, so backup work had progressed beyond planning. The final recurring-job outcome is not yet established. Paper automatic backups remained follow-up work in the reviewed messages.
+## Updates
 
-## Update procedure to establish
+Before updating a server or modpack, I want a backup and a record of the version I'm replacing. Afterward, I check startup logs and join the server to make sure the worlds and plugins still work. I'll add a more detailed update procedure as I settle on one.
 
-Before an update, record the current versions and take a recoverable backup. Stop the workload gracefully, apply the intended server or modpack update, then validate logs and gameplay. Record the result and rollback steps. This is a proposed operating procedure, not a claim of installed automation.
+## Checklist
 
-## Publication boundaries
+- [ ] Confirm backup schedules and retention for all three servers.
+- [ ] Check off-host backup copies.
+- [ ] Complete and document a restore test.
+- [ ] Add the installed systemd units with secrets removed.
+- [ ] Check clean shutdown behavior.
+- [ ] Add CPU, RAM, disk, and Minecraft performance monitoring.
+- [ ] Confirm cleanup of Paper's migration staging folder.
 
-Publish reviewed documentation and sanitized examples. Keep worlds, player identifiers, allowlists, operator lists, logs, secrets, RCON passwords, and raw host configuration outside the repository. Any future scripts should be tested before being described as operational.
+Worlds, player lists, raw logs, and credentials stay outside this repo.

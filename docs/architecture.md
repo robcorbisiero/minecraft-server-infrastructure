@@ -1,28 +1,38 @@
-# Architecture and networking
+# Networking
 
-The environment consists of three dedicated physical Linux machines, one per workload: Bedrock on the Lenovo M710q, ATM10 on the Lenovo M720q, and Paper on the HP ProDesk 600 G2 SFF. See the [hardware inventory and migration chronology](hardware-inventory.md).
+Each Minecraft server has its own physical Ubuntu machine. I manage them over SSH on the LAN, with the home router handling the internet connection and port forwarding.
 
-## Paper connection path
+![Server layout](../diagrams/server-topology.svg)
 
-The setup notes record a non-default TCP port of `25555`. A Minecraft SRV record mapped the Paper hostname to that port, and the owner subsequently confirmed that everything was working.
+| Server | Host | Game port |
+| --- | --- | --- |
+| Bedrock | M710q / mc-bedrock | UDP 19132 |
+| ATM10 | M720q / mc-atm10 | TCP 25565 |
+| Paper | HP ProDesk / mc-paper | TCP 25555 |
 
-Sanitized equivalent:
+## Paper DNS
+
+I used a non-default port for Paper and set up a Minecraft SRV record so players could use the hostname without typing the port.
+
+Using an example domain, the record looks like this:
 
 ```dns
 _minecraft._tcp.paper.example.com. 1800 IN SRV 0 0 25555 paper.example.com.
 ```
 
-The target hostname also needs an A record resolving to the router's public IPv4 address. The router's TCP forwarding rule directs the public port to the Paper host. Public and private IP addresses and the live connection hostname are intentionally omitted here.
+The target also needs an A record pointing to the public IPv4 address, and the router needs to forward TCP 25555 to the Paper machine.
 
-## Recorded configuration
+I checked the records with:
 
-| Detail | Bedrock | ATM10 | Paper |
-| --- | --- | --- | --- |
-| OS release | Ubuntu Server 24.04.4 LTS | Ubuntu Server 26.04.1 LTS | Ubuntu Server 26.04.1 LTS |
-| Historical server/modpack version | BDS 1.26.51.1 in earlier notes | ATM10 v8.2 / NeoForge | Paper 26.3 build 159 |
-| Installed RAM | 16 GB DDR4 | 16 GB DDR4 | 16 GB DDR4 |
-| Storage | 120 GB NVMe | 128 GB WD SN520 NVMe | 240 GB SSD |
-| Application port | UDP 19132 | TCP 25565 | TCP 25555 |
-| Service name | minecraft-bedrock | atm10.service | minecraft-paper.service in migration plan |
+```bash
+dig +short paper.example.com A
+dig +short SRV _minecraft._tcp.paper.example.com
+```
 
-These values describe the recorded setup, not a current live inspection. Exact service files, router rules, and current software versions remain to be captured. Historical firewall checks describe LAN-only SSH and Bedrock UDP 19132 allowed; ATM10 TCP 25565 was LAN-only at that stage. Those checks should not be presented as current public forwarding rules.
+The [DNS screenshot](../screenshots/README.md#paper-dns-service-record) shows the record I configured.
+
+## Firewall notes
+
+During setup I checked LAN-only SSH rules and allowed Bedrock's UDP port. ATM10's TCP port was LAN-only at that stage. Those were different points in the setup, so I still need to add a current copy of the rules and router configuration here.
+
+I keep private IP addresses and credentials out of the examples. The public hostname is visible in the original DNS screenshot.

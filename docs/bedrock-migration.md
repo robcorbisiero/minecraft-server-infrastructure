@@ -1,16 +1,14 @@
-# Case study: moving Bedrock to the M710q
+# Moving Bedrock to the M710q
 
-**Objective:** preserve an existing Bedrock world and add-ons while freeing the six-core M720q for ATM10.
-
-**Result:** the migration notes confirm Bedrock running on the M710q, with the service active and enabled. A later terminal check confirms the UDP listener. The workload moved between physical Ubuntu machines; no world reset was required.
+I moved Bedrock from the M720q to the M710q so I could use the stronger machine for ATM10. I wanted to keep the world and add-ons intact. After the move, I checked that the service was active, enabled at startup, and listening on UDP 19132.
 
 ## Why move a working server?
 
-The original M720q had an i5-8500T and 16 GB RAM. The available M710q had an i5-7500T and the same installed memory. Assigning the heavier modded Java workload to the six-core machine made better use of the existing hardware. Bedrock moved first, and ATM10 was installed only after the new Bedrock host had been checked.
+Both machines had 16 GB RAM, but the M720q had the newer six-core i5-8500T. I moved Bedrock first and checked it on the M710q before touching the old installation.
 
 ## 1. Inventory before changing roles
 
-These commands were used in the setup discussion to identify the workload, capacity, and service:
+I started by checking the hardware, storage, and running server:
 
 ```bash
 hostname
@@ -22,13 +20,13 @@ systemctl list-units --type=service --all | grep -Ei 'bedrock|minecraft|mcserver
 ps aux | grep -Ei 'bedrock_server|minecraft' | grep -v grep
 ```
 
-The important distinction was the physical machine versus its current hostname. The old M720q still used a Bedrock-oriented hostname during early ATM10 work. Hardware model and CPU were more reliable identifiers than the shell prompt alone.
+The M720q still had its old Bedrock hostname during part of the ATM10 setup, which made the notes confusing later. Checking the hardware model and CPU helped keep the machines straight.
 
 ## 2. Preserve the complete installation
 
-The transfer included worlds, behavior packs, resource packs, permissions, and configuration. Copying only a world directory could omit the add-ons it depends on.
+I transferred the worlds, behavior packs, resource packs, permissions, and configuration together. I needed the add-ons as well as the world.
 
-The recorded restore commands on the destination were:
+On the M710q:
 
 ```bash
 sudo tar -xzpf ~/bedrock-migration.tar.gz -C /opt/minecraft/
@@ -38,23 +36,22 @@ ls -lah /opt/minecraft/bedrock/behavior_packs/
 ls -lah /opt/minecraft/bedrock/resource_packs/
 ```
 
-These commands document this installation's ownership, not a universal service-user recommendation. Check the service account before adapting them.
+My installation used `rob` for ownership here. Use the account your own service runs under if you adapt this.
 
-The directory inspection confirmed the transferred world and add-on directories. A final synchronization was discussed to avoid losing progress made after the initial archive:
+The world and add-on directories were present after extraction. The next check was whether anyone had played since the archive was made. The final-sync command was:
 
 ```bash
-# Historical command with the source address replaced by a placeholder.
-# Stop the source workload cleanly before the final synchronization.
+# Stop the source server before the final sync. Replace SOURCE_HOST.
 rsync -avh --progress \
   rob@SOURCE_HOST:/opt/minecraft/bedrock/ \
   /opt/minecraft/bedrock/
 ```
 
-`SOURCE_HOST` is a placeholder. This command writes to the destination. The destination must not be running against the files during the final sync.
+Keep the destination server stopped during the final sync too.
 
 ## 3. Start, validate, then cut over networking
 
-The migration sequence kept the old installation as a fallback, stopped the old server, started the new server, and tested locally before moving the UDP forwarding rule.
+I kept the old installation as a backup, stopped it, and tested Bedrock on the new machine before changing the UDP forwarding rule.
 
 ```bash
 sudo systemctl start minecraft-bedrock
@@ -63,11 +60,11 @@ systemctl is-enabled minecraft-bedrock
 sudo ss -lunp | grep 19132
 ```
 
-The old service was left disabled once the destination was working. The M720q could then be repurposed without two Bedrock instances competing for player traffic.
+Once the M710q was working, I left Bedrock disabled on the M720q and moved on to ATM10.
 
 ## 4. Recover unused LVM capacity
 
-The M710q assessment showed a roughly 119.2 GiB NVMe device but only about 58 GiB assigned to root. The setup inspected free volume-group space before expanding the root logical volume:
+The NVMe showed about 119.2 GiB, but root only had about 58 GiB. I checked the volume group before expanding it:
 
 ```bash
 sudo vgs
@@ -75,18 +72,18 @@ sudo lvs
 df -h /
 ```
 
-The expansion discussed in setup was:
+The expansion command for my layout was:
 
 ```bash
-# Historical command: only applicable to this verified VG/LV layout.
+# Check the VG/LV names and free space before using this.
 sudo lvextend -l +100%FREE -r /dev/ubuntu-vg/ubuntu-lv
 ```
 
-This allocates all remaining free extents in that volume group and resizes the filesystem. It should not be copied onto an uninspected storage layout. Later messages confirmed expansion succeeded.
+This used the remaining free space in `ubuntu-vg` and resized the filesystem. The expansion succeeded. Check your own layout first; this command takes all free extents in that VG.
 
 ## 5. Validate a recovery archive
 
-The following commands and result were present in the owner's terminal transcript:
+I also created and checked a recovery archive:
 
 ```bash
 sudo tar -czf \
@@ -101,7 +98,7 @@ systemctl is-active minecraft-bedrock
 sudo ss -lunp | grep 19132
 ```
 
-Selected recorded output:
+The relevant output was:
 
 ```text
 Backup archive verified
@@ -109,12 +106,8 @@ active
 UNCONN ... 0.0.0.0:19132 ... bedrock_server
 ```
 
-The listener line is abbreviated; it is not a fresh command run. The archive command above captures worlds only, whereas the migration archive covered the complete installation. The wildcard check was recorded during setup; for repeatable validation, select one exact archive path. A successful tar listing proves readability, not a playable restore. A consistent live backup also needs the server's save coordination or a clean stop.
+I shortened the listener line above. This recovery archive contains the worlds; the migration archive contained the full installation. For future checks I would use an exact archive filename instead of the wildcard, and stop the server or coordinate its saves before backing up. The archive was readable, but I still need to do a full restore test.
 
-## Lessons
+## What I took from this
 
-- Record physical hardware separately from a hostname that may survive repurposing.
-- Preserve add-on dependencies alongside the world.
-- Validate the destination before changing player traffic.
-- Inspect LVM allocation rather than assuming the whole disk is usable by root.
-- Distinguish archive integrity from restoration testing.
+Keeping the original installation until the new one worked made the move easier to recover from. The two things easiest to overlook were the add-on folders and the service definition on the destination. LVM was another useful check: the drive had space that root wasn't using yet.

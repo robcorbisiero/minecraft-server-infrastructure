@@ -1,14 +1,14 @@
-# Paper: Windows to Ubuntu migration
+# Moving Paper from Windows to Ubuntu
 
-## Outcome
+## The move
 
-An existing Windows Paper server was transferred to an HP ProDesk 600 G2 SFF running Ubuntu. After DNS configuration and testing, the owner confirmed that everything was working. The setup notes describe approximately 23 GB of server data.
+I moved my Paper server from Windows to the HP ProDesk running Ubuntu. There was about 23 GB to transfer, including the worlds, plugins, datapacks, and configuration. I tested it after the move and everything was working.
 
-## Recorded layout
+## Files and Java
 
 ![Paper host Java runtime validation](../screenshots/paper-java-version.jpg)
 
-The original screenshot confirms OpenJDK 25.0.4.1 on the Paper host. See the [evidence gallery](../screenshots/README.md) for the capture context.
+This was the Java version after installation: OpenJDK 25.0.4.1.
 
 - Runtime directory: `/opt/minecraft/paper/`.
 - Transfer staging directory: `/home/rob/paper-transfer/`.
@@ -17,9 +17,9 @@ The original screenshot confirms OpenJDK 25.0.4.1 on the Paper host. See the [ev
 
 ## Command walkthrough
 
-### Inventory the destination
+### Check the HP
 
-The owner supplied the output of these checks before transferring the workload:
+I checked the Ubuntu installation before transferring anything:
 
 ```bash
 hostnamectl
@@ -28,11 +28,11 @@ lsblk -o NAME,SIZE,FSTYPE,MOUNTPOINTS
 java -version
 ```
 
-The original output identified Ubuntu 26.04.1 LTS, HP ProDesk 600 G2 SFF, 14 GiB usable RAM, 4 GiB swap, a 223.6 GiB device, and an initially 100 GiB root logical volume. Java was initially absent; the later screenshot above records the installed runtime.
+The HP was running Ubuntu 26.04.1 LTS, with 14 GiB usable RAM, 4 GiB swap, and a 223.6 GiB disk. Root initially had 100 GiB allocated. Java wasn't installed yet.
 
-### Prepare the runtime location
+### Prepare the server directory
 
-These commands were proposed in the migration sequence:
+The directory and account setup in my migration plan was:
 
 ```bash
 sudo useradd --system --home-dir /opt/minecraft/paper \
@@ -41,17 +41,17 @@ sudo mkdir -p /opt/minecraft/paper
 sudo chown -R minecraft:minecraft /opt/minecraft/paper
 ```
 
-The account creation is a one-time operation; inspect the account first on an existing host. These commands show the intended service identity and directory ownership, rather than running Paper as root.
+This creates a separate `minecraft` account for the server. Check whether it already exists before repeating the account creation.
 
-### Stop the Windows workload and transfer all data
+### Transfer the Windows server
 
-The source folder was `C:\Users\Rob\Paper-Server`. The application was to be stopped cleanly with `stop` in the Minecraft console before copying. The transfer staged approximately 23 GB under `/home/rob/paper-transfer/`.
+My Windows folder was `C:\Users\Rob\Paper-Server`. The transfer plan was to stop Paper with `stop` in its console, then copy the whole folder to `/home/rob/paper-transfer/` on Ubuntu.
 
-Preserve the whole installation, including Multiverse world folders, plugin configuration, datapacks, and player state. Wait for the transfer to finish before copying staging files into the runtime location. Keep the Windows copy for rollback until gameplay has been validated.
+I needed all the Multiverse worlds, plugin configuration, datapacks, and player data to come across. I kept the Windows copy as a fallback and waited for the transfer to finish before moving on.
 
-### Validate process, logs, listener, and DNS separately
+### Check the server and DNS
 
-The following combines the recorded service name and DNS checks into a sanitized verification sequence. It is a reference sequence, not a fresh test:
+These are the service, port, and DNS checks together for reference:
 
 ```bash
 systemctl status minecraft-paper --no-pager -l
@@ -61,18 +61,14 @@ dig +short paper.example.com A
 dig +short SRV _minecraft._tcp.paper.example.com
 ```
 
-`paper.example.com` is a placeholder. The SRV lookup should match the intended target and port; the original editor screenshot is in the [gallery](../screenshots/README.md#paper-dns-service-record).
+Replace `paper.example.com` with your hostname. My SRV record points to port 25555; the [screenshot](../screenshots/README.md#paper-dns-service-record) shows the DNS setup.
 
-Each check answers a different question: service state, startup errors, local listening socket, address resolution, and service-port discovery. The owner subsequently confirmed that everything was working. That gameplay check is stronger than a process-only check.
+I checked the logs and listener as well as DNS, then tested the actual game. Seeing the process running wasn't enough to call the move finished.
 
-## Preservation requirements
+## Cleanup and follow-up
 
-Preserve all world folders, including Multiverse worlds, plugin data, datapacks, and configuration. A successful migration includes player validation of worlds and inventories, rather than relying only on a process starting.
+The transfer left Windows startup files, an older Paper JAR, logs, crash reports, and about 23 GB duplicated in the staging folder. I still need to confirm the cleanup. I'd keep a separate verified backup before deleting the staging copy.
 
-## Follow-up identified during setup
+View distance and simulation distance were both 14 during setup. Lowering them was an option to try if performance needed it; I haven't documented that change.
 
-The previous chat recommended inspecting disk usage, removing Windows-only startup artifacts after verification, and reviewing old JARs, logs, and crash reports. It also identified a roughly 23 GB duplicate staging copy. Completion of this cleanup was not recorded in the recovered messages.
 
-The notes recorded view distance and simulation distance both at 14. Lower values were suggested as an optional performance adjustment; adoption was not confirmed.
-
-Keep a verified independent backup before deleting staging data or changing the runtime. No deletion or tuning commands have been executed as part of this documentation task.

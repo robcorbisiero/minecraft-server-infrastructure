@@ -1,63 +1,55 @@
-# Troubleshooting case studies
+# Problems I ran into
 
-## ATM10 slows down when three players explore
+## ATM10 lag when three of us explored
 
-**Symptom:** normal gameplay was reported as good; simultaneous generation of new chunks caused delays.
+ATM10 was running well until three of us started generating new chunks. My first thought was to give it more RAM.
 
-**Investigation:** checked the i5-8500T, system memory, process RSS, current PID, and JVM heap. Idle diagnostics showed about 3.55 GiB heap used against a 10 GiB maximum and about 4 GiB system memory available.
+I checked system memory, Java's process memory, and then the heap itself. While idle, the heap was using about 3.55 GiB out of 10 GiB, with roughly 4 GiB of system memory available. That didn't give me a reason to increase the heap, so I kept the 8–10 GiB settings and looked into chunk generation instead.
 
-**Decision:** retain the historical 8–10 GiB heap settings and investigate generation work under load. Pregeneration was proposed; a measured improvement was not recorded.
+Pregeneration was the next idea, but I don't have a completed run or before-and-after measurements documented yet. The [commands and heap screenshot](atm10-deployment.md#4-investigate-the-exploration-slowdown) are in the ATM10 notes.
 
-**Lesson:** low free RAM and a large Java process do not by themselves justify increasing the heap. See [the commands and interpretation](atm10-deployment.md#4-investigate-the-exploration-slowdown).
+## jcmd couldn't find the Java process
 
-## Java diagnostic command targets a process that no longer exists
+I tried checking a PID from an earlier command and got an attach error. The server had restarted, so Java had a new process ID.
 
-**Symptom:** `jcmd` could not attach to the previously recorded PID.
+```bash
+pgrep -af java
+jcmd -l
+```
 
-**Investigation:** rediscovered Java with `pgrep -af java` and `jcmd -l`; the server had a different PID.
+Finding the current process fixed the starting point for the check. If it still won't attach, process ownership and permissions are worth checking too.
 
-**Resolution path:** use the current Minecraft PID and check process ownership before interpreting an attach failure as an application fault.
+## Ubuntu said repository metadata wasn't valid yet
 
-**Lesson:** identifiers from a prior terminal session can become stale after a service restart.
-
-## Ubuntu cannot accept repository metadata
-
-**Symptom:** package metadata was rejected as not yet valid during M720q setup.
-
-**Investigation:** the setup identified Chrony rather than `systemd-timesyncd`, with a clock offset of approximately four hours. The recorded diagnostic was:
+During M720q setup, the system clock was about four hours out. The machine was using Chrony, not `systemd-timesyncd`.
 
 ```bash
 sudo chronyc -N ntpdata
 ```
 
-**Lesson:** inspect the actual time synchronization service and clock state before treating package metadata errors as a repository outage. The retrieved excerpt does not establish a final corrected offset.
+This was a clock-sync problem to investigate before blaming the package repository. I still need to add the final clock check to these notes.
 
-## Storage capacity appears smaller than the installed drive
+## The disk was bigger than the root filesystem
 
-**Symptom:** the M710q NVMe had approximately 119.2 GiB device capacity but root initially used about 58 GiB. Paper's 223.6 GiB device initially had a 100 GiB root LV.
+The M710q had about 119.2 GiB of NVMe capacity, but only about 58 GiB assigned to root. The HP had a similar situation: a 223.6 GiB disk with a 100 GiB root LV.
 
-**Investigation:** compare `lsblk`, `df -h /`, `vgs`, and `lvs`.
+```bash
+lsblk -o NAME,SIZE,FSTYPE,MOUNTPOINTS
+df -h /
+sudo vgs
+sudo lvs
+```
 
-**Resolution:** inspect free VG extents before extending the intended logical volume and filesystem. Later Bedrock messages confirmed expansion succeeded.
+I checked the free space in the volume group before expanding the logical volume. The M710q expansion completed successfully. That was a useful reminder to check LVM allocation instead of assuming Ubuntu used the whole disk.
 
-**Lesson:** disk size, partition size, logical-volume size, and filesystem size are separate layers.
+## Bedrock files were there, but the service wasn't
 
-## Service not found after copying Bedrock
+After copying Bedrock to the M710q, systemd didn't know about it yet. The installation files had transferred, but the service definition hadn't been created on the new host.
 
-**Symptom:** the files were on the M710q but systemd could not start the workload.
+Once the service was configured, I checked that it started, listened on UDP 19132, and was enabled for startup. Copying the application folder wasn't the whole migration.
 
-**Investigation:** the destination did not yet have the Bedrock service definition.
+## Trying to update the Paper Images plugin
 
-**Resolution path:** configure the destination service, start it, check process/listener state, and enable startup. Later migration notes confirm the service running and enabled.
+I tried getting the Images plugin working with Paper 26.3. The build ran into old Spigot dependencies, then dependencies on internal Minecraft and CraftBukkit classes.
 
-**Lesson:** transferring application data does not transfer operating-system service registration.
-
-## Paper Images plugin fails after a Minecraft update
-
-**Symptom:** attempts to build an Images plugin version encountered missing legacy Spigot artifacts and dependencies on internal Minecraft/CraftBukkit classes.
-
-**Investigation:** inspected Maven module selection, POM dependencies, and imports of `net.minecraft.*` and `org.bukkit.craftbukkit.*`.
-
-**Outcome:** the owner stopped the custom update attempt and chose to wait for a compatible release. No successful custom plugin build is claimed.
-
-**Lesson:** a version-number change does not establish binary or internal-API compatibility. A documented decision to stop an unsuitable repair is part of maintaining a stable workload.
+I looked through the Maven modules, POM files, and imports, but this was becoming more work than it was worth for that plugin. I stopped the custom update attempt and decided to wait for a compatible release.

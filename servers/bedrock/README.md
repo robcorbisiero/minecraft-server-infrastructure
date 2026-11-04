@@ -1,6 +1,6 @@
 # Bedrock Dedicated Server
 
-| Item | Recorded setup |
+| Item | Setup |
 | --- | --- |
 | Machine | Lenovo ThinkCentre M710q |
 | CPU | Intel Core i5-7500T, 4 cores / 4 threads |
@@ -12,11 +12,11 @@
 | Installation | `/opt/minecraft/bedrock/` |
 | Service | `minecraft-bedrock` |
 
-Bedrock originally ran on the M720q. Its worlds, behavior packs, resource packs, and configuration were transferred to the M710q before the M720q was repurposed for ATM10. Later messages confirmed the Bedrock service active and enabled. The M710q root LVM volume was expanded after migration.
+I moved Bedrock from the M720q to the M710q, including the worlds, behavior packs, resource packs, and configuration. I checked that the service was active and enabled, then expanded the root LVM volume.
 
-The migration notes identify BOMD, Dynamic Lighting, and Better Backpacks directories. Earlier pre-migration notes list BDS 1.26.51.1, BOMD 1.5.1, and Dynamic Lighting 4.0; current versions have not been inspected.
+The transferred add-ons included BOMD, Dynamic Lighting, and Better Backpacks. My earlier version notes list BDS 1.26.51.1, BOMD 1.5.1, and Dynamic Lighting 4.0; these may have changed since.
 
-Original terminal output records a recovery archive passing a tar listing check, followed by a successful service restart and UDP 19132 listener. This establishes archive readability, not a full restore test or a confirmed recurring backup schedule.
+I checked a recovery archive with tar, restarted Bedrock, and confirmed the UDP 19132 listener. A full restore test and the final backup schedule are still on my list.
 
 See [architecture](../../docs/architecture.md) and [operations](../../docs/operations.md).
 

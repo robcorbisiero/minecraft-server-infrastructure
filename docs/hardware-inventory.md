@@ -1,27 +1,25 @@
-# Hardware inventory and workload migration
+# Hardware
 
-The [physical deployment photograph](../photos/README.md) confirms the owner's device mapping: white wireless router, Bedrock mini PC on the left, ATM10 mini PC in the middle, and Paper desktop on the right.
+I used two Lenovo mini PCs and an HP desktop I already had. The [photo](../photos/README.md) shows how they're arranged.
 
-| Workload after migration | Physical machine | CPU | RAM | Storage |
+| Server | Machine | CPU | RAM | Storage |
 | --- | --- | --- | --- | --- |
 | Bedrock | Lenovo ThinkCentre M710q | i5-7500T, 4 cores / 4 threads | 16 GB DDR4 | 120 GB NVMe |
 | ATM10 | Lenovo ThinkCentre M720q | i5-8500T, 6 cores / 6 threads | 16 GB DDR4 | 128 GB WD PC SN520 NVMe |
 | Paper | HP ProDesk 600 G2 SFF | i5-6500 | 16 GB DDR4 | 240 GB SSD |
 
-## Migration chronology
+## Moving things around
 
-1. The M720q originally hosted Bedrock.
-2. The M710q was initially considered for ATM10. Hardware assessment identified its i5-7500T, 16 GB DDR4, NVMe storage, and Ubuntu Server 24.04.4 LTS.
-3. Bedrock moved to the M710q so the stronger six-core M720q could host ATM10. Setup messages confirmed the migrated Bedrock service running and enabled.
-4. The M720q was repurposed as `mc-atm10`, with Java 21, ATM10 v8.2, and the existing single-player save.
-5. The HP ProDesk became `mc-paper`, hosting the Paper server migrated from Windows.
+I originally had Bedrock on the M720q and considered using the M710q for ATM10. After comparing them, I swapped their roles. The M720q's six-core i5 made more sense for the heavier modded server, while the M710q could handle Bedrock.
 
-An older Bedrock recap describes the M720q at that earlier stage. It should not be used as the post-migration Bedrock inventory.
+I moved Bedrock first, checked that it worked on the M710q, then set up ATM10 on the M720q. The HP became the third server when I moved Paper off Windows.
 
-## Evidence and capacity notation
+The hostnames after the moves were `mc-bedrock`, `mc-atm10`, and `mc-paper`.
 
-The owner explicitly supplied the HP specs as i5-6500, 16 GB DDR4, and 240 GB SSD. Original Paper terminal output corroborates the HP ProDesk 600 G2 SFF model, Ubuntu 26.04.1 LTS, 14 GiB usable memory, and a 223.6 GiB device.
+## Storage and usable memory
 
-The M710q specifications appear in the earlier assessment of its terminal output. M720q CPU and memory are corroborated by later ATM10 diagnostics; the WD SN520 model and 128 GB capacity come from its earlier hardware recap. Some comparison tables call that drive 120 GB. Capacities are retained as recorded rather than silently treating these descriptions as identical measurements.
+The HP has a 240 GB SSD, which Linux reports as about 223.6 GiB. It also reports around 14 GiB usable RAM out of the installed 16 GB. Its root logical volume initially used only 100 GiB.
 
-This inventory documents setup history recovered on November 3, 2026. It is not a live inventory scan.
+The M710q's NVMe showed about 119.2 GiB, but root initially had only about 58 GiB. I expanded the LVM allocation during setup.
+
+Some of my earlier notes call the M720q drive 120 GB; the more specific hardware recap lists a 128 GB WD PC SN520. I've kept that model here rather than treating the rounded figures as exact measurements.
